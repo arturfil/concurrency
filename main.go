@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/arturfil/concurrency/waitgroups"
 
 func main() {
-    fmt.Println("Works")
+    waitgroups.WaitGroupsMain()
 }
