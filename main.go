@@ -1,7 +1,11 @@
 package main
 
-import "github.com/arturfil/concurrency/waitgroups"
+import (
+	"github.com/arturfil/concurrency/channels"
+)
 
 func main() {
-    waitgroups.WaitGroupsMain()
+    // waitgroups.WaitGroupsMain()
+    // mutex.MutexMain()
+    channels.ChannelsMain()
 }
