@@ -7,5 +7,5 @@ import (
 func main() {
     // waitgroups.WaitGroupsMain()
     // mutex.MutexMain()
-    channels.ChannelsMain()
+    channels.SycnMain()
 }
