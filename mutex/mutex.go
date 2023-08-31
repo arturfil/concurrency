@@ -7,33 +7,65 @@ import (
 
 var (
 	mutex   sync.Mutex
-	balance int
+	balance int = 0 
+
+    withdrawls = []transaction {
+        {"withdraw", 500},
+        {"withdraw", 200},
+    }
+
+    deposits = []transaction {
+        {"deposit", 500},
+        {"deposit", 200},
+    }
+
 )
 
-func MutexMain() {
-	balance = 1000
+type transaction struct {
+    transactionType string
+    amount int 
+}
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go withdraw(700, &wg)
-	go deposit(500, &wg)
+func MutexMain() {
+    
+    var wg sync.WaitGroup
+
+    for _, trx := range deposits {
+        wg.Add(1)
+        go func(amount int) {
+            defer wg.Done()
+            for i := 0; i < 1000; i++ {
+                deposit(amount)
+            }
+        }(trx.amount)
+    }
+
+    for _, trx := range withdrawls {
+        wg.Add(1)
+        go func(amount int) {
+            defer wg.Done()
+            for i := 0; i < 1000; i++ {
+                withdraw(amount)
+            }
+        }(trx.amount)
+    }
+
     wg.Wait()
 
+    fmt.Println("----------------------------------------------------------")
     fmt.Printf("New Balance %d\n", balance)
 }
 
-func deposit(value int, wg *sync.WaitGroup) {
+func deposit(value int) {
 	mutex.Lock()
-	fmt.Printf("Deposit %d to account with balance %d\n", value, balance)
+	defer mutex.Unlock()
 	balance += value
-	mutex.Unlock()
-	wg.Done()
+	fmt.Printf("[Deposit]\t | %d\t | to account\t | with balance %d\n", value, balance)
 }
 
-func withdraw(value int, wg *sync.WaitGroup) {
+func withdraw(value int) {
 	mutex.Lock()
-	fmt.Printf("withdrawing %d from account with balance %d\n", value, balance)
+    defer mutex.Unlock()
 	balance -= value
-	mutex.Unlock()
-	wg.Done()
+	fmt.Printf("[Withdrawing]\t | %d\t | from account\t | with balance %d\n", value, balance)
 }

@@ -1,4 +1,4 @@
-package waitgroups
+package concurrency
 
 import (
 	"fmt"
@@ -7,49 +7,74 @@ import (
 	"time"
 )
 
+// wait groups wait for a collection of concurrent tasks
 func WaitGroupsMain() {
-	var wg sync.WaitGroup
-    // wg.Add(1)
+    var wg sync.WaitGroup
 
-	// fmt.Println("Go waitgroup")
-	// go myFunc(&wg)
-    // wg.Wait()
-    urls := []string {
-        "https://google.com",
-        "https://twitter.com",
-        "https://youtube.com",
-        "https://udemy.com",
-    }
+    start := time.Now()
+    /*
+    go loopNums(&wg, 0, 100)
+    go loopNums(&wg, 100, 200)
+    go loopNums(&wg, 200, 300)
 
-    /*for _, url := range urls {
-        go getStatus(&wg, url)
-        wg.Add(1)
-    }
-
-    wg.Wait() // wait for other waitgroups
+    wg.Wait()
     */
 
-    getStatusV1(&wg, urls)
-    
-	fmt.Println("finished my go program")
-}
+    urls := []string {
+        "https://google.com",
+        "https://youtube.com",
+        "https://udemy.com",
+        "https://twitter.com",
+    }
 
-func myFunc(wg *sync.WaitGroup) {
-	time.Sleep(1 * time.Second)
-	fmt.Println("Finished executing go-routine")
+    getStatus(&wg, urls) 
+    
+    /*
+    go func() {
+        time.Sleep(time.Second * 3) 
+        for i := 0; i < 100; i++ {
+            fmt.Println(i)
+        }
+    }()
+    
+    go func() {
+        time.Sleep(time.Second * 3) 
+        for i := 100; i < 200; i++ {
+            fmt.Println(i)
+        }
+    }() 
+
+    go func() {
+        time.Sleep(time.Second * 3) 
+        for i := 200; i < 300; i++ {
+            fmt.Println(i)
+        }
+    }()
+    */
+
+    elapsed := time.Since(start)
+    fmt.Printf("Time taken %f s\n", float32(elapsed/1000000000))
+
+} 
+
+func loopNums(wg *sync.WaitGroup, init int, end int) {
+    time.Sleep(time.Second * 3)
+    for i := init; i < end; i++ {
+        fmt.Println(i)
+    }
     wg.Done()
 }
 
-func getStatusV1(wg *sync.WaitGroup, urls []string) {
+func getStatus(wg *sync.WaitGroup, urls []string) {
     for _, url := range urls {
         wg.Add(1)
         go func(url string) {
-            res, err := http.Get(url)
+            res, err := http.Get(url) 
 
             if err != nil {
                 fmt.Printf("[Error: %s x -> %s]\n", err, url)
             } else {
-                fmt.Printf("[%d %s]\n", res.StatusCode, url) 
+                fmt.Printf("[%d %s]\n", res.StatusCode, url)
             }
             wg.Done()
         }(url)
@@ -57,13 +82,4 @@ func getStatusV1(wg *sync.WaitGroup, urls []string) {
     wg.Wait()
 }
 
-func getStatus(wg *sync.WaitGroup, url string) {
-    defer wg.Done()
 
-    res, err := http.Get(url) 
-    if err != nil {
-        fmt.Println("Error: couldn't reach url", url) 
-    } else {
-        fmt.Printf("%d status of %s\n", res.StatusCode, url)
-    }
-}

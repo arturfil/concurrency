@@ -3,12 +3,32 @@ package channels
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 )
 
 func ChannelsMain() {
+    c := make(chan int, 10)
 
-    channelSelect()
+    go func() {
+        var wg sync.WaitGroup
+        for i := 0; i < 10; i++ {
+            wg.Add(1)
+            go func(i int) {
+                defer wg.Done()
+                c <- i 
+                time.Sleep(time.Second * 5)
+            }(i)
+        }
+        wg.Wait()
+        close(c)
+    }()
+
+    for val := range c {
+        fmt.Println(val)
+    }
+
+    // channelSelect()
 
     // values := make(chan int)
     /*
