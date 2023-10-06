@@ -7,61 +7,85 @@ import (
 	"time"
 )
 
+var wg sync.WaitGroup
+
 func ChannelsMain() {
-    c := make(chan int, 10)
-
-    go func() {
-        var wg sync.WaitGroup
-        for i := 0; i < 10; i++ {
-            wg.Add(1)
-            go func(i int) {
-                defer wg.Done()
-                c <- i 
-                time.Sleep(time.Second * 5)
-            }(i)
-        }
-        wg.Wait()
-        close(c)
-    }()
-
-    for val := range c {
-        fmt.Println(val)
-    }
-
+    // unbufferendChannels()
+    // nonSeqUnbuffered()
+    // bufferedChannels()
     // channelSelect()
-
-    // values := make(chan int)
-    /*
-    values := make(chan string, 2) // this 2, is a capacity for the queue of no. of channles proc
-    defer close(values)
-
-    go sendString(values)
-    go sendString(values)
-
-    value := <- values
-    fmt.Println(value)
-    */
-    /*
-    c := make(chan string)
-    go count("sheep", c)
-
-    for msg := range c {
-        fmt.Println(msg)
-    }
-    */
 }
 
-func count(item string, c chan string) {
-    for i := 0; i < 5; i++ {
-        c <- item 
-        time.Sleep(time.Microsecond * 500)
+
+func unbufferendChannels() {
+    c := make(chan int)
+
+    start := time.Now()
+
+    for i := 0; i < 3; i++ {
+        go func() {
+            for val := range c {
+                time.Sleep(time.Millisecond * 500) // 10 / 4  -> 2.5 * 2 ~ 5s 
+                fmt.Println("value -> ", val)
+            }
+        }()
+    }
+
+    for i := 1; i <= 10; i++ {
+        c <- i
     }
     close(c)
+
+    end := time.Since(start)
+    fmt.Println("It has taken: ", end)
 }
 
-func sendValue(c chan int) {
-    c <- 8 
+
+func nonSeqUnbuffered() {
+    c := make(chan int)
+
+    start := time.Now()
+
+    for i := 0; i < 3; i++ { // number of workers -> should take only two seconds
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for val := range c {
+                time.Sleep(time.Millisecond * 500) // 10 / 4  -> 2.5 * 2 ~ 5s 
+                fmt.Println("value -> ", val)
+            } 
+        }()
+    }
+        
+    for i := 1; i <= 10; i++ {
+        c <- i
+    }
+
+    close(c)
+    wg.Wait()
+
+    end := time.Since(start)
+
+    fmt.Println("It has taken: ", end)
 }
+
+// use case -> order matters & comunication between processes
+func bufferedChannels() {
+    // no need for go routines
+    // after that, it behaves exactly the same as an unbuffered channel
+    c := make(chan string, 4)
+
+    c <- "Hello"
+    c <- "My Name is"
+    c <- "Arturo"
+    c <- "I like to code and play soccer"
+
+    fmt.Println(<- c)
+    fmt.Println(<- c)
+    fmt.Println(<- c)
+    fmt.Println(<- c)
+}
+
 
 func channelSelect() {
     c1 := make(chan string)
@@ -102,9 +126,3 @@ func channelSelect() {
     }  
 }
 
-func sendString(c chan string) {
-    fmt.Println("[START]")
-    time.Sleep(1 * time.Second)
-    c <- "Hello world"
-    fmt.Println("[FINISH]")
-}

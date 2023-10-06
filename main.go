@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/arturfil/concurrency/mutex"
+	"github.com/arturfil/concurrency/channels"
 )
 
 func main() {
     // waitgroups.WaitGroupsMain()
-    mutex.MutexMain()
+    // mutex.MutexMain()
     // channels.SycnMain()
-    // channels.ChannelsMain()
+    channels.ChannelsMain()
     // workers.WorkersMain()
 }
